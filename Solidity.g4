@@ -1,11 +1,14 @@
-// Copyright 2016-2019 Federico Bond <federicobond@gmail.com>
-// Licensed under the MIT license. See LICENSE file in the project root for details.
-
 grammar Solidity;
 
 sourceUnit
-  : (natSpec|pragmaDirective | importDirective | contractDefinition
+  : spdxLicenseIdentifier? ( natSpec | pragmaDirective | importDirective | contractDefinition
      | functionDefinition | constantVariableDeclaration | structDefinition | enumDefinition)* EOF ;
+
+LicenseIdentifier
+  : '// SPDX-License-Identifier: ' [a-zA-Z0-9 ()+.-]+ ;
+
+spdxLicenseIdentifier
+  : LicenseIdentifier ;
 
 pragmaDirective
   : 'pragma' pragmaName pragmaValue ';' ;
@@ -33,14 +36,9 @@ importDirective
   | 'import' ('*' | identifier) ('as' identifier)? 'from' StringLiteral ';'
   | 'import' '{' importDeclaration ( ',' importDeclaration )* '}' 'from' StringLiteral ';' ;
 
-NatSpecSingleLine
-  : ('///' .*? [\r\n]) + ;
-
-NatSpecMultiLine
-  : '/**' .*? '*/' ;
 
 natSpec
-  : NatSpecSingleLine
+  : NatSpecSingleLine+
   | NatSpecMultiLine ;
 
 contractDefinition
@@ -304,8 +302,6 @@ expression
   | expression ('=' | '|=' | '^=' | '&=' | '<<=' | '>>=' | '>>>=' | '+=' | '-=' | '*=' | '/=' | '%=') expression
   | primaryExpression;
 
-
-
 primaryExpression
   : BooleanLiteral
   | numberLiteral
@@ -511,9 +507,19 @@ DoubleQuotedStringCharacter
 fragment
 SingleQuotedStringCharacter
   : ~['\r\n\\] | ('\\' .) ;
+
 WS
   : [ \t\r\n\u000C]+ -> skip ;
-COMMENT
-  : '/*' .*? '*/' -> channel(HIDDEN) ;
+
+NatSpecSingleLine
+  : '///' ~[\r\n]* -> channel(HIDDEN);
+
+NatSpecMultiLine
+  : '/**' .*? '*/' -> channel(HIDDEN);
+
 LINE_COMMENT
-  : '//' ~[\r\n]* -> channel(HIDDEN) ;
+  : '//' ~[\r\n]* -> channel(HIDDEN);
+
+COMMENT
+  : '/*' .*? '*/' -> channel(HIDDEN);
+
