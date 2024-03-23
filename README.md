@@ -1,2 +1,2 @@
 # solidity-universal-parser
-:wrench: Solidity parser compatible with all solidity versions.
+> :wrench: Solidity parser compatible with all solidity versions.
